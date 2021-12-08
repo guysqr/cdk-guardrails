@@ -22,4 +22,7 @@ You type
 
 It will do a `cdk diff` for you and let you know if there is anything wrong, before offering to run `cdk deploy` for you.
 
-*Note: currently only in zsh-compatible form.*
+### To do
+Currently only in zsh-compatible form.
+Could also install it globally, but pros and cons to that.
+Your ideas and fixes welcome!
