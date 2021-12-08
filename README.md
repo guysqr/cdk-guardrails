@@ -1,4 +1,5 @@
-# cdk-armour
+# CDK Armour
+
 A wrapper script you can use to protect yourself from CDK deploy mishaps.
 
 ![image](https://user-images.githubusercontent.com/52842774/145179579-bf67aec9-78a9-4d8b-b326-105e55a8a6e6.png)
