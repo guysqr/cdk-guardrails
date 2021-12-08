@@ -22,3 +22,4 @@ You type
 
 It will do a `cdk diff` for you and let you know if there is anything wrong, before offering to run `cdk deploy` for you.
 
+*Note: currently only in zsh-compatible form.*
