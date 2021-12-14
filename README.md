@@ -20,7 +20,7 @@ You type
 ./deploy.sh mystack -c arg=v --profile my-profile
 ```
 
-It will do a `cdk diff` for you and let you know if there is anything wrong, before offering to run `cdk deploy` for you.
+It will do a `cdk diff` for you and let you know if there is anything wrong, a `cdk synth` and do some more checks before offering to run `cdk deploy` for you.
 
 ### To do
 
