@@ -64,7 +64,7 @@ else
         if [[ $cf_template =~ $has_open_rules ]] ; then
             warnings+="❌ %F{red}%S SECURITY WARNING%s : %BCOULD CONTAIN RESOURCES THAT ARE OPEN TO THE INTERNET!%b%f\n\n"
         else
-            ok+="✅ %F{green} No open rules (0.0.0.0/0) are in this stack.%f\n"
+            ok+="✅ %F{green} No references to 0.0.0.0 were found in this stack.%f\n"
         fi
         #were there any changes we should check carefully? 
         #replacements?
