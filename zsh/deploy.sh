@@ -29,6 +29,7 @@ has_error="exited with error"
 is_unchanged="no differences"
 has_replacement="requires replacement"
 has_destroy="destroy"
+has_open_rules="0.0.0.0"
 
 # test the token
 if [[ $token_ok =~ $bad_token ]] ; then
@@ -39,6 +40,7 @@ else
 fi
 
 # do the diff
+echo '\n\nDiffing stack...\n\n'
 result=$(cdk diff $* 2>&1)
 
 #print the output
@@ -54,20 +56,34 @@ else
     if [[ $result =~ $is_unchanged ]] ; then
         print -P "✅ %F{green} Nothing to do!%f"
     else
-        echo '\n\n'
+        echo '\n\nSynthing stack...\n\n'
+        warnings=""
+        ok=""
+        # do the synth
+        cf_template=$(cdk synth $* 2>&1)
+        if [[ $cf_template =~ $has_open_rules ]] ; then
+            warnings+="❌ %F{red}%S SECURITY WARNING%s : %BCOULD CONTAIN RESOURCES THAT ARE OPEN TO THE INTERNET!%b%f\n\n"
+        else
+            ok+="✅ %F{green} No open rules (0.0.0.0/0) are in this stack.%f\n"
+        fi
         #were there any changes we should check carefully? 
         #replacements?
         if [[ $result =~ $has_replacement ]] ; then
-            print -P "❌ %F{red}%S REPLACEMENT WARNING%s : %BTHERE ARE RESOURCES THAT ARE GOING TO BE REPLACED!%b%f\n\n%F{yellow}Please check the above output carefully %SBEFORE%s you proceed.%f\n\n"
+            warnings+="❌ %F{red}%S REPLACEMENT WARNING%s : %BTHERE ARE RESOURCES THAT ARE GOING TO BE REPLACED!%b%f\n\n"
         else
-            print -P "✅ %F{green} No resources are expected to be replaced.%f\n"
+            ok+="✅ %F{green} No resources are expected to be replaced.%f\n"
         fi
         #destroys?
         if [[ $result =~ $has_destroy ]] ; then
-            print -P "⛔️ %F{red}%SDESTROY WARNING%s : %BTHERE ARE RESOURCES THAT ARE GOING TO BE DESTROYED!%b%f\n\n%F{yellow}Please check the above output carefully %SBEFORE%s you proceed.%f\n\n"
+            warnings+="⛔️ %F{red}%SDESTROY WARNING%s : %BTHERE ARE RESOURCES THAT ARE GOING TO BE DESTROYED!%b%f\n\n"
         else
-            print -P "✅ %F{green} No resources are expected to be destroyed.%f\n"
+            ok+="✅ %F{green} No resources are expected to be destroyed.%f\n"
         fi
+        if [[ $warnings != "" ]] ; then
+            print -P $warnings
+            print -P "%F{yellow}Please check the above output carefully %SBEFORE%s you proceed.%f\n"
+        fi
+        print -P $ok
         #there were diffs, so have a look at them before you deploy!
         read "proceed?There were diffs for your review. Are the changes good to deploy? [y/N] "
         if [[ $proceed == "y" ]] ; then
