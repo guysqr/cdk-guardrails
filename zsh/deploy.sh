@@ -17,7 +17,7 @@ done
 
 #if --profile supplied, check if it has a valid token, otherwise check default credentials
 if [[ $profile != "" ]] ; then
-    echo "Checking valid credentials for $profile"
+    echo "\nChecking valid credentials for $profile"
     token_ok=$(aws sts get-caller-identity --profile $profile 2>&1)
 else
     token_ok=$(aws sts get-caller-identity 2>&1)
@@ -33,14 +33,14 @@ has_open_rules="0.0.0.0"
 
 # test the token
 if [[ $token_ok =~ $bad_token ]] ; then
-    print -P "\n%F{red}%SNo valid token%s%f\n\n%F{yellow}Please make sure you are logged in and try again.%f\n\n"
+    print -P "\n%F{red}%SNo valid token%s%f\n\n%F{yellow}Please make sure you are logged in and try again.%f\n"
     exit
 else
-    print -P "\n✅  %F{green}Got a valid token%f\n"
+    print -P "\n✅ %F{green}Got a valid token%f\n"
 fi
 
 # do the diff
-echo '\n\nDiffing stack...\n\n'
+echo '\nDiffing stack...\n\n'
 result=$(cdk diff $* 2>&1)
 
 #print the output
@@ -61,10 +61,24 @@ else
         ok=""
         # do the synth
         cf_template=$(cdk synth $* 2>&1)
+        if [[ (( $+commands[foobar] )) ]] ; then
+            echo $cf_template > ".__temp_output.yaml"
+            cfn_lint=$(setopt extended_glob)
+            cfn_lint=$(cfn-lint ".__temp_output.yaml" 2>&1)
+            rm ".__temp_output.yaml"
+            if [[ $cfn_lint ]] ; then
+                warnings+="❌ %F{red}%S CFN ISSUES%s : %B%Scfn-lint%s FOUND ISSUES WITH YOUR TEMPLATE!%b%f\n\n"
+                echo "\n" + ${cfn_lint//$'\n'/'\n\r'}  + "\n\n"
+            else
+                ok+="✅ %F{green} No output from cfn-lint.%f\n"
+            fi
+        else 
+            print -P "%F{red}cfn-lint is not installed%f"
+        fi
         if [[ $cf_template =~ $has_open_rules ]] ; then
             warnings+="❌ %F{red}%S SECURITY WARNING%s : %BCOULD CONTAIN RESOURCES THAT ARE OPEN TO THE INTERNET!%b%f\n\n"
         else
-            ok+="✅ %F{green} No references to 0.0.0.0 were found in this stack.%f\n"
+            ok+="✅ %F{green} No open rules (0.0.0.0/0) are in this stack.%f\n"
         fi
         #were there any changes we should check carefully? 
         #replacements?
